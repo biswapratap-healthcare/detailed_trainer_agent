@@ -23,6 +23,8 @@ def get_annotation_data(path):
     pixel_array_numpy = ds.pixel_array
     img_file = os.path.basename(image_file) + '.jpg'
     dir_path = os.path.dirname(__file__) + '/organized_data/'
+    if os.path.exists(dir_path) is False:
+        os.mkdir(dir_path)
     img_file_path = os.path.join(dir_path, img_file)
     cv2.imwrite(img_file_path, pixel_array_numpy)
 

@@ -118,6 +118,9 @@ class DataConnector:
                     df.loc[idx] = row
                     idx += 1
         if df.shape[0] > 0:
-            csv_path = os.path.dirname(__file__) + '/data/annotated_' + str(index) + '.csv'
+            csv_dir = os.path.dirname(__file__) + '/data/'
+            if os.path.exists(csv_dir) is False:
+                os.mkdir(csv_dir)
+            csv_path = csv_dir + 'annotated_' + str(index) + '.csv'
             df.to_csv(csv_path)
         return df
