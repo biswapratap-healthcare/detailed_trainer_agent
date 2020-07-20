@@ -71,4 +71,5 @@ def run_d():
 
 
 if __name__ == "__main__":
+    print('Inside __main__')
     run_d()
