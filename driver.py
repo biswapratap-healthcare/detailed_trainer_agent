@@ -18,12 +18,6 @@ s_print_lock = Lock()
 s_queue_lock = Lock()
 
 
-def s_print(*a, **b):
-    """Thread safe print function"""
-    with s_print_lock:
-        print(*a, **b)
-
-
 def put_queue(d):
     with s_queue_lock:
         q.put(d)
@@ -39,12 +33,12 @@ def get_records():
     from_date = 1590969600000
     to_date = 1591056000000
     index = 0
-    s_print('[get_records] Starting Get Records While Loop')
+    print('[get_records] Starting Get Records While Loop')
     while not exit_flag.wait(timeout=DETAILED_GET_RECORDS_DELAY):
         connector = DataConnector(un='admin', pw='Hops@123')
         data = connector.get_data(from_date=from_date, to_date=to_date, index=index)
         if data.shape[0] > 0:
-            s_print('[get_records] Found ' + str(data.shape[0]) + ' records')
+            print('[get_records] Found ' + str(data.shape[0]) + ' records')
             put_queue(data)
             index += 1
         from_date = to_date
@@ -52,7 +46,7 @@ def get_records():
 
 
 def process():
-    s_print('[process] Starting Process While Loop')
+    print('[process] Starting Process While Loop')
     while not exit_flag.wait(timeout=DETAILED_RECORD_PROCESSING_DELAY):
         if q.qsize() >= DETAILED_PROCESSING_BATCH_SIZE:
             count = DETAILED_PROCESSING_BATCH_SIZE
@@ -66,9 +60,9 @@ def process():
 
 
 def run_d():
-    s_print('[Main] Starting Process Thread')
+    print('[Main] Starting Process Thread')
     thread_process = threading.Thread(target=process)
-    s_print('[Main] Starting Get Records Thread')
+    print('[Main] Starting Get Records Thread')
     thread_get_records = threading.Thread(target=get_records)
     thread_process.start()
     thread_get_records.start()

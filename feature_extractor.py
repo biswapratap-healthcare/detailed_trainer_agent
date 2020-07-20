@@ -1,8 +1,8 @@
-from keras import Model
-from keras.applications import VGG16
-from keras.preprocessing.image import load_img
-from keras.preprocessing.image import img_to_array
-from keras.applications.vgg16 import preprocess_input
+from tensorflow.keras import Model
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.applications.vgg16 import preprocess_input
 
 
 class FeatureExtractor:
