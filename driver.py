@@ -1,10 +1,10 @@
 import queue
 import threading
-import numpy as np
+#import numpy as np
 from threading import Lock
 
-#from data_connector import DataConnector
-#from train_model import train
+from data_connector import DataConnector
+from train_model import train
 
 #DETAILED_GET_RECORDS_DELAY = 86400
 DETAILED_GET_RECORDS_DELAY = 1
@@ -36,9 +36,9 @@ def get_records():
     index = 0
     print('[get_records] Starting Get Records While Loop')
     while not exit_flag.wait(timeout=DETAILED_GET_RECORDS_DELAY):
-        #connector = DataConnector(un='admin', pw='Hops@123')
-        #data = connector.get_data(from_date=from_date, to_date=to_date, index=index)
-        data = np.array([[1, 2, 3], [4, 5, 6]])
+        connector = DataConnector(un='admin', pw='Hops@123')
+        data = connector.get_data(from_date=from_date, to_date=to_date, index=index)
+        #data = np.array([[1, 2, 3], [4, 5, 6]])
         if data.shape[0] > 0:
             print('[get_records] Found ' + str(data.shape[0]) + ' records')
             put_queue(data)
@@ -58,8 +58,8 @@ def process():
                 data.append(d)
                 q.task_done()
                 count -= 1
-            print('[process] Training ...')
-            #train(data)
+            #print('[process] Training ...')
+            train(data)
 
 
 def run_d():

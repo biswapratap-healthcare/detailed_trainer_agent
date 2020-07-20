@@ -8,8 +8,8 @@ from tensorflow.keras.applications.vgg16 import preprocess_input
 class FeatureExtractor:
 
     def __init__(self):
-        self.__model = VGG16()
-        self.__model.layers.pop()
+        self.__model = VGG16(include_top=False, weights='./vgg16_notop.h5')
+        #self.__model.layers.pop()
         self.__model = Model(inputs=self.__model.inputs, outputs=self.__model.layers[-1].output)
 
     def get_features(self, img):
