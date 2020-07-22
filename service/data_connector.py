@@ -6,9 +6,9 @@ import zipfile
 import requests
 import pandas
 
-from db import MongoDB
-from annotation import get_annotation_data
-from feature_extractor import FeatureExtractor
+from service.db import MongoDB
+from service.annotation import get_annotation_data
+from service.feature_extractor import FeatureExtractor
 
 DB_FIND_LIMIT = 100
 MONGO_DB_URI = 'mongodb://localhost:27017/'

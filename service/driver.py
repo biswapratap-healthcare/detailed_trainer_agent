@@ -3,8 +3,8 @@ import threading
 #import numpy as np
 from threading import Lock
 
-from data_connector import DataConnector
-from train_model import train
+from service.data_connector import DataConnector
+from service.train_model import train
 
 #DETAILED_GET_RECORDS_DELAY = 86400
 DETAILED_GET_RECORDS_DELAY = 1
@@ -69,10 +69,3 @@ def run_d():
     thread_get_records = threading.Thread(target=get_records)
     thread_process.start()
     thread_get_records.start()
-    thread_process.join()
-    thread_get_records.join()
-
-
-if __name__ == "__main__":
-    print('Inside __main__')
-    run_d()

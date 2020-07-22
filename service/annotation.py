@@ -3,7 +3,7 @@ import re
 import cv2
 import pydicom
 
-from dicom_parser import dictify
+from service.dicom_parser import dictify
 
 
 def get_annotation_data(path):
