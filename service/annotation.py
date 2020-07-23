@@ -7,9 +7,9 @@ from shapely.geometry import Polygon
 from service.dicom_parser import dictify
 
 
-def is_intersecting(l1, l2):
-    p1 = Polygon(l1)
-    p2 = Polygon(l2)
+def is_overlap(text, poly):
+    p1 = Polygon(text)
+    p2 = Polygon(poly)
     return p1.intersects(p2)
 
 
@@ -115,11 +115,14 @@ def get_annotation_data(path):
     for text_r in text_rows:
         for graphic_r in graphic_rows:
             row = list()
+
             text_box_raw = text_r[2:4]
             top_left_corner = (text_box_raw[0][0], text_box_raw[0][1])
             bottom_right_corner = (text_box_raw[1][0], text_box_raw[1][1])
             top_right_corner = (text_box_raw[0][0], text_box_raw[1][1])
             bottom_left_corner = (text_box_raw[1][0], text_box_raw[0][1])
+            graphic_text = [bottom_left_corner, top_left_corner, top_right_corner, bottom_right_corner]
+
             graphic_poly_raw = graphic_r[2]
             graphic_poly = list()
             idx = 0
@@ -128,10 +131,9 @@ def get_annotation_data(path):
                 idx += 2
             if len(graphic_poly) < 3:
                 continue
-            p1 = Polygon([bottom_left_corner, top_left_corner, top_right_corner, bottom_right_corner])
-            print(graphic_poly)
-            p2 = Polygon(graphic_poly)
-            if p1.intersects(p2) is False:
+
+            if is_overlap(text=graphic_text,
+                          poly=graphic_poly) is False:
                 row.append(study_id)
                 row.append(patient_id)
                 row.append(name)

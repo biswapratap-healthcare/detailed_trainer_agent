@@ -122,11 +122,6 @@ class DataConnector:
         idx = 0
         for p in patients:
             print(p['patientName'])
-            #if p['patientName'] in ['PANKAJKUMAR PATEL P']:
-            #    print('Pass')
-            #    continue
-            #if 'BACHUBHAI' in p['patientName']:
-            #    print('got bachu!!')
             studies = p['dicomFileDetails']
             for s in studies:
                 path = self.__get_study_instance(s['studyInstanceUID'])
