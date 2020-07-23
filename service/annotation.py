@@ -132,8 +132,7 @@ def get_annotation_data(path):
             if len(graphic_poly) < 3:
                 continue
 
-            if is_overlap(text=graphic_text,
-                          poly=graphic_poly) is False:
+            if is_overlap(text=graphic_text, poly=graphic_poly) is False:
                 row.append(study_id)
                 row.append(patient_id)
                 row.append(name)
