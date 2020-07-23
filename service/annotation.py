@@ -13,6 +13,10 @@ def is_overlap(text, poly):
     return p1.intersects(p2)
 
 
+def get_shortest_distance(text, poly):
+    pass
+
+
 def get_annotation_data(path):
     instances = list()
     for root, directories, filenames in os.walk(path):
@@ -132,7 +136,7 @@ def get_annotation_data(path):
             if len(graphic_poly) < 3:
                 continue
 
-            if is_overlap(text=graphic_text, poly=graphic_poly) is False:
+            if is_overlap(text=graphic_text, poly=graphic_poly):
                 row.append(study_id)
                 row.append(patient_id)
                 row.append(name)
