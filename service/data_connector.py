@@ -99,14 +99,34 @@ class DataConnector:
     def get_data(self, from_date, to_date, index):
         self.__login()
         patients = self.__get_dicom_instances_ids_by_date(from_date, to_date)
-        df = pandas.DataFrame(columns=['StudyInstanceUID', 'PatientID', 'PatientName', 'PatientAge', 'PatientSex',
-                                       'StudyDescription', 'StudyDate', 'StudyTime', 'BoundingBoxAnnotationUnits',
-                                       'UnformattedTextValue', 'BoundingBoxTopLeftHandCorner',
-                                       'BoundingBoxBottomRightHandCorner', 'AnchorPoint', 'AnchorPointVisibility',
-                                       'TextLineColor', 'GraphicAnnotationUnits', 'GraphicType', 'GraphicData',
-                                       'GraphicFilled', 'GraphicLineColor'])
+        df = pandas.DataFrame(columns=['StudyInstanceUID',
+                                       'PatientID',
+                                       'PatientName',
+                                       'PatientAge',
+                                       'PatientSex',
+                                       'StudyDescription',
+                                       'StudyDate',
+                                       'StudyTime',
+                                       'BoundingBoxAnnotationUnits',
+                                       'UnformattedTextValue',
+                                       'BoundingBoxTopLeftHandCorner',
+                                       'BoundingBoxBottomRightHandCorner',
+                                       'AnchorPoint',
+                                       'AnchorPointVisibility',
+                                       'TextLineColor',
+                                       'GraphicAnnotationUnits',
+                                       'GraphicType',
+                                       'GraphicData',
+                                       'GraphicFilled',
+                                       'GraphicLineColor'])
         idx = 0
         for p in patients:
+            print(p['patientName'])
+            #if p['patientName'] in ['PANKAJKUMAR PATEL P']:
+            #    print('Pass')
+            #    continue
+            #if 'BACHUBHAI' in p['patientName']:
+            #    print('got bachu!!')
             studies = p['dicomFileDetails']
             for s in studies:
                 path = self.__get_study_instance(s['studyInstanceUID'])

@@ -69,3 +69,12 @@ def run_d():
     thread_get_records = threading.Thread(target=get_records)
     thread_process.start()
     thread_get_records.start()
+
+
+if __name__ == "__main__":
+    index = 0
+    from_date = 1590969600000
+    to_date = 1595417293000
+    connector = DataConnector(un='admin', pw='Hops@123')
+    data = connector.get_data(from_date=from_date, to_date=to_date, index=index)
+    print('c')

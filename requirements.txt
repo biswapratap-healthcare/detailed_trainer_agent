@@ -8,6 +8,7 @@ tensorflow==2.2.0
 Pillow==7.1.2
 scipy==1.4.1
 numpy==1.19.0
+Shapely==1.7.0
 
 Flask==1.1.2
 gunicorn==20.0.4
