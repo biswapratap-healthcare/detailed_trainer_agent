@@ -47,8 +47,11 @@ def get_annotation_data(path):
     name_age = '' + ds['PatientName'].family_name
     name_age_split = name_age.split()
     name = name_age_split[0] + ' ' + name_age_split[1]
-    age = name_age_split[2][:-3]
-    age = re.sub("[^0-9]", "", age)
+    try:
+        age = name_age_split[2][:-3]
+        age = re.sub("[^0-9]", "", age)
+    except Exception as e:
+        age = 0
     sex = ds['PatientSex']
     study_description = ds['StudyDescription']
     study_date = ds['StudyDate']
@@ -71,9 +74,9 @@ def get_annotation_data(path):
         for text_object in text_object_sequence:
             bounding_box_annotation_units = text_object['BoundingBoxAnnotationUnits']
             unformatted_text_value = text_object['UnformattedTextValue']
-            if 'pneumo' in unformatted_text_value:
+            if 'pneumo' in unformatted_text_value.lower():
                 pneumonia += 1
-            elif 'covid' in unformatted_text_value:
+            elif 'covid' in unformatted_text_value.lower():
                 covid +=1
             else:
                 normal += 1
@@ -114,6 +117,7 @@ def get_annotation_data(path):
 
             graphic_rows.append(graphic_row)
 
+    lbl = 'normal'
     rows = list()
 
     for text_r in text_rows:
@@ -149,15 +153,16 @@ def get_annotation_data(path):
                 row.extend(text_r)
                 row.extend(graphic_r)
 
+                max_v = max([pneumonia, covid, normal])
+                if max_v == pneumonia:
+                    lbl = 'pneumonia'
+                elif max_v == covid:
+                    lbl = 'covid'
+                else:
+                    lbl = 'normal'
+                row.append(lbl)
+
                 rows.append(row)
                 break
 
-    #df.to_csv('organized_data/annotation.csv')
-    max_v = max([pneumonia, covid, normal])
-    if max_v == pneumonia:
-        lbl = 'pneumonia'
-    elif max_v == covid:
-        lbl = 'covid'
-    else:
-        lbl = 'normal'
     return rows, img_file_path, lbl

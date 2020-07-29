@@ -118,7 +118,8 @@ class DataConnector:
                                        'GraphicType',
                                        'GraphicData',
                                        'GraphicFilled',
-                                       'GraphicLineColor'])
+                                       'GraphicLineColor',
+                                       'Label'])
         idx = 0
         for p in patients:
             print(p['patientName'])
