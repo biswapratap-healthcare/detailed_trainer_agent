@@ -102,32 +102,9 @@ class DataConnector:
         clean = re.compile('<.*?>')
         return re.sub(clean, '', text)
 
-    def get_data(self, from_date, to_date, index):
+    def get_data(self, from_date, to_date):
         self.__login()
         patients = self.__get_dicom_instances_ids_by_date(from_date, to_date)
-        df = pandas.DataFrame(columns=['StudyInstanceUID',
-                                       'PatientID',
-                                       'PatientName',
-                                       'PatientAge',
-                                       'PatientSex',
-                                       'StudyDescription',
-                                       'StudyDate',
-                                       'StudyTime',
-                                       'BoundingBoxAnnotationUnits',
-                                       'UnformattedTextValue',
-                                       'BoundingBoxTopLeftHandCorner',
-                                       'BoundingBoxBottomRightHandCorner',
-                                       'AnchorPoint',
-                                       'AnchorPointVisibility',
-                                       'TextLineColor',
-                                       'GraphicAnnotationUnits',
-                                       'GraphicType',
-                                       'GraphicData',
-                                       'GraphicFilled',
-                                       'GraphicLineColor',
-                                       'Label'])
-        idx = 0
-        all_patients = []
         for p in patients:
             try:
                 patient_db_data = dict()
@@ -156,11 +133,15 @@ class DataConnector:
                 print('Reason Type            : ' + reason_type)
                 print("*****************************************")
 
+                all_studies = list()
                 for s in studies:
                     path = self.__get_study_instance(s['studyInstanceUID'])
                     if path == '':
                         continue
                     study_data = get_instance_data(path)
-                    patient_db_data['study'] = study_data
+                    all_studies.append(study_data)
+
+                patient_db_data['studies'] = all_studies
+                print()
             except Exception as e:
                 pass

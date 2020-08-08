@@ -37,7 +37,7 @@ def get_records():
     print('[get_records] Starting Get Records While Loop')
     while not exit_flag.wait(timeout=DETAILED_GET_RECORDS_DELAY):
         connector = DataConnector(un='admin', pw='Hops@123')
-        data = connector.get_data(from_date=from_date, to_date=to_date, index=index)
+        data = connector.get_data(from_date=from_date, to_date=to_date)
         #data = np.array([[1, 2, 3], [4, 5, 6]])
         if data.shape[0] > 0:
             print('[get_records] Found ' + str(data.shape[0]) + ' records')
@@ -78,4 +78,4 @@ if __name__ == "__main__":
     from_date = 1590969600000
     to_date = 1596727041000
     connector = DataConnector(un='admin', pw='Hops@123')
-    data = connector.get_data(from_date=from_date, to_date=to_date, index=index)
+    data = connector.get_data(from_date=from_date, to_date=to_date)
