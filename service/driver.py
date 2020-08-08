@@ -32,7 +32,7 @@ def pop_queue():
 
 def get_records():
     from_date = 1590969600000
-    to_date = 1591056000000
+    to_date = 1596727041000
     index = 0
     print('[get_records] Starting Get Records While Loop')
     while not exit_flag.wait(timeout=DETAILED_GET_RECORDS_DELAY):
@@ -76,6 +76,6 @@ def run_d():
 if __name__ == "__main__":
     index = 0
     from_date = 1590969600000
-    to_date = 1595940944000
+    to_date = 1596727041000
     connector = DataConnector(un='admin', pw='Hops@123')
     data = connector.get_data(from_date=from_date, to_date=to_date, index=index)

@@ -7,7 +7,7 @@ import requests
 import pandas
 
 from service.db import MongoDB
-from service.annotation import get_annotation_data
+from service.annotation import get_instance_data
 from service.feature_extractor import FeatureExtractor
 
 DB_FIND_LIMIT = 100
@@ -96,6 +96,12 @@ class DataConnector:
             print(img_file_path)
             print("Ignoring Exception : " + str(e))
 
+    @staticmethod
+    def remove_html_tags(text):
+        import re
+        clean = re.compile('<.*?>')
+        return re.sub(clean, '', text)
+
     def get_data(self, from_date, to_date, index):
         self.__login()
         patients = self.__get_dicom_instances_ids_by_date(from_date, to_date)
@@ -121,22 +127,40 @@ class DataConnector:
                                        'GraphicLineColor',
                                        'Label'])
         idx = 0
+        all_patients = []
         for p in patients:
-            print(p['patientName'])
-            studies = p['dicomFileDetails']
-            for s in studies:
-                path = self.__get_study_instance(s['studyInstanceUID'])
-                if path == '':
-                    continue
-                rows, img_file_path, lbl = get_annotation_data(path)
-                DataConnector.__set_fast_data(img_file_path, lbl)
-                for row in rows:
-                    df.loc[idx] = row
-                    idx += 1
-        if df.shape[0] > 0:
-            csv_dir = os.path.dirname(__file__) + '/data/'
-            if os.path.exists(csv_dir) is False:
-                os.mkdir(csv_dir)
-            csv_path = csv_dir + 'annotated_' + str(index) + '.csv'
-            df.to_csv(csv_path)
-        return df
+            try:
+                patient_db_data = dict()
+                name = str(p['patientName'])
+                sex = str(p['sex'])
+                age = str(p['age'])
+                dr_review = DataConnector.remove_html_tags(str(p['drReview']))
+                typ = str(p['type'])
+                reason_type = str(p['reasonType'])
+                studies = p['dicomFileDetails']
+
+                patient_db_data['patient_name'] = name
+                patient_db_data['sex'] = sex
+                patient_db_data['age'] = age
+                patient_db_data['doctor_review'] = dr_review
+                patient_db_data['type'] = typ
+                patient_db_data['reason_type'] = reason_type
+
+                print('*********** Per Patient Data ***********')
+                print('Patient Name           : ' + name)
+                print('Number of Studies      : ' + str(len(studies)))
+                print('Sex                    : ' + sex)
+                print('Age                    : ' + age)
+                print('Dr Review              : ' + dr_review)
+                print('Type                   : ' + typ)
+                print('Reason Type            : ' + reason_type)
+                print("*****************************************")
+
+                for s in studies:
+                    path = self.__get_study_instance(s['studyInstanceUID'])
+                    if path == '':
+                        continue
+                    study_data = get_instance_data(path)
+                    patient_db_data['study'] = study_data
+            except Exception as e:
+                pass
