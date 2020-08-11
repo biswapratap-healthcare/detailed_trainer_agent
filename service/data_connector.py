@@ -88,7 +88,7 @@ class DataConnector:
         feature_map['feature'] = feature_vector
         payload.append(feature_map)
         try:
-            db_handle.to_db(payload=payload, key=None, db=MONGO_HOPS_DB, collection=MONGO_XRAY_COLLECTION)
+            db_handle.to_db(payload=payload, db=MONGO_HOPS_DB, collection=MONGO_XRAY_COLLECTION)
             payload.clear()
             db_handle.close()
         except Exception as e:
@@ -104,10 +104,11 @@ class DataConnector:
 
     def get_data(self, from_date, to_date):
         self.__login()
+        db_handle = MongoDB()
         patients = self.__get_dicom_instances_ids_by_date(from_date, to_date)
         for p in patients:
             try:
-                patient_db_data = dict()
+                patient_db_payload = dict()
                 name = str(p['patientName'])
                 sex = str(p['sex'])
                 age = str(p['age'])
@@ -116,22 +117,22 @@ class DataConnector:
                 reason_type = str(p['reasonType'])
                 studies = p['dicomFileDetails']
 
-                patient_db_data['patient_name'] = name
-                patient_db_data['sex'] = sex
-                patient_db_data['age'] = age
-                patient_db_data['doctor_review'] = dr_review
-                patient_db_data['type'] = typ
-                patient_db_data['reason_type'] = reason_type
+                patient_db_payload['patient_name'] = name
+                patient_db_payload['sex'] = sex
+                patient_db_payload['age'] = age
+                patient_db_payload['doctor_review'] = dr_review
+                patient_db_payload['type'] = typ
+                patient_db_payload['reason_type'] = reason_type
 
-                print('*********** Per Patient Data ***********')
-                print('Patient Name           : ' + name)
-                print('Number of Studies      : ' + str(len(studies)))
-                print('Sex                    : ' + sex)
-                print('Age                    : ' + age)
-                print('Dr Review              : ' + dr_review)
-                print('Type                   : ' + typ)
-                print('Reason Type            : ' + reason_type)
-                print("*****************************************")
+                #print('*********** Per Patient Data ***********')
+                #print('Patient Name           : ' + name)
+                #print('Number of Studies      : ' + str(len(studies)))
+                #print('Sex                    : ' + sex)
+                #print('Age                    : ' + age)
+                #print('Dr Review              : ' + dr_review)
+                #print('Type                   : ' + typ)
+                #print('Reason Type            : ' + reason_type)
+                #print("*****************************************")
 
                 all_studies = list()
                 for s in studies:
@@ -141,7 +142,13 @@ class DataConnector:
                     study_data = get_instance_data(path)
                     all_studies.append(study_data)
 
-                patient_db_data['studies'] = all_studies
+                patient_db_payload['studies'] = all_studies
                 print()
+                #try:
+                #    db_handle.to_db(payload=patient_db_payload, db=MONGO_HOPS_DB, collection=MONGO_XRAY_COLLECTION)
+                #    patient_db_payload.clear()
+                #    db_handle.close()
+                #except Exception as e:
+                #    print("Ignoring Exception [1]: " + str(e))
             except Exception as e:
-                pass
+                print("Ignoring Exception [2]: " + str(e))

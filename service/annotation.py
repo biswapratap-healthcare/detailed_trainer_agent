@@ -39,6 +39,12 @@ def get_common_data(instance, ds_0):
     instance['study_description'] = ds['StudyDescription']
     instance['study_date'] = ds['StudyDate']
     instance['study_time'] = ds['StudyTime']
+    try:
+        instance['body_part_examined'] = ds['BodyPartExamined']
+        if instance['modality'] == 'DX' or instance['modality'] == 'PR':
+            instance['view_position'] = ds['ViewPosition']
+    except Exception as e:
+        print('Exception : ' + str(e))
     return instance
 
 
@@ -74,6 +80,7 @@ def get_annotation_data(ds_0):
 
 
 def get_valid_annotation_data(instance, texts, graphics):
+    instance['annotation'] = list()
     for idx_txt, text_r in enumerate(texts):
         for idx_grp, graphic_r in enumerate(graphics):
             text_r['associated_graphic_index'] = list()
@@ -94,11 +101,12 @@ def get_valid_annotation_data(instance, texts, graphics):
             if len(graphic_poly) < 3:
                 continue
             if is_overlap(text=graphic_text, poly=graphic_poly):
-                text_r['associated_graphic_index'].append(idx_grp)
-                graphic_r['associated_text_index'].append(idx_txt)
-    instance['texts'] = texts
-    instance['graphics'] = graphics
-    return instance
+                d = (graphic_r['graphic_type'], graphic_r['graphic_data'], text_r['unformatted_text_value'])
+                instance['annotation'].append(d)
+    if len(instance['annotation']) > 0:
+        return instance
+    else:
+        return None
 
 
 def get_instance_data(path):
@@ -115,7 +123,7 @@ def get_instance_data(path):
                     ds_image = pydicom.dcmread(fpath)
                     pixel_array_numpy = ds_image.pixel_array
                     img_file = os.path.basename(filename) + '.jpg'
-                    dir_path = os.path.dirname(__file__) + '/organized_data/'
+                    dir_path = os.path.dirname(__file__) + '/organized_data/' + str(study_id) + '/'
                     if os.path.exists(dir_path) is False:
                         os.mkdir(dir_path)
                     img_file_path = os.path.join(dir_path, img_file)
@@ -132,6 +140,7 @@ def get_instance_data(path):
                         instance = get_valid_annotation_data(instance, texts, graphics)
                     except Exception as e:
                         instance['is_a'] = 'unknown'
-                instances.append(instance)
+                if instance is not None:
+                    instances.append(instance)
     study_data['instances'] = instances
     return study_data

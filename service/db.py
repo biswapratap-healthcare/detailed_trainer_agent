@@ -12,13 +12,12 @@ class MongoDB:
     def close(self):
         self.__db_handle.close()
 
-    def to_db(self, payload, key=None, db=None, collection=None):
+    def to_db(self, payload, db=None, collection=None):
         db = self.__db_handle[db]
         col = db[collection]
         try:
-            x = col.insert_many(payload)
-            len(x.inserted_ids)
-            print("Inserted : " + str(len(x.inserted_ids)) + " records.")
+            x = col.insert(payload)
+            print("Inserted : " + str(x))
         except Exception as e:
             print(str(e))
 
