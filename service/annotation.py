@@ -1,8 +1,12 @@
 import os
 import re
+import shutil
+from os.path import isfile, join
+import pandas as pd
 import cv2
 import pydicom
 from shapely.geometry import Polygon
+from service.preprocess import get_3d_preprocessed_data
 
 from service.dicom_parser import dictify
 
@@ -44,7 +48,8 @@ def get_common_data(instance, ds_0):
         if instance['modality'] == 'DX' or instance['modality'] == 'PR':
             instance['view_position'] = ds['ViewPosition']
     except Exception as e:
-        print('Exception : ' + str(e))
+        #print('Exception : ' + str(e))
+        pass
     return instance
 
 
@@ -101,46 +106,73 @@ def get_valid_annotation_data(instance, texts, graphics):
             if len(graphic_poly) < 3:
                 continue
             if is_overlap(text=graphic_text, poly=graphic_poly):
+                print("Overlap Found!")
                 d = (graphic_r['graphic_type'], graphic_r['graphic_data'], text_r['unformatted_text_value'])
                 instance['annotation'].append(d)
+            else:
+                print("NO Overlap Found!")
     if len(instance['annotation']) > 0:
         return instance
     else:
         return None
 
 
-def get_instance_data(path):
+def get_instance_data(patient_name, src_path):
+    dst_root_dir = 'dicom_files/' + patient_name + '/'
+    if os.path.exists(dst_root_dir) is False:
+        os.makedirs(dst_root_dir)
+
+    has_annotation = False
     study_data = dict()
-    study_id = os.path.basename(os.path.normpath(path))
+    study_id = os.path.basename(os.path.normpath(src_path))
     study_data['study_id'] = study_id
-    instances = list()
-    for root, directories, filenames in os.walk(path):
-        for filename in filenames:
-            if '.DS' not in filename:
-                fpath = os.path.join(root, filename)
+    src_dicom_path = src_path + '/DICOM/'
+    src_dicom_path_plus_one = None
+
+    for f in os.listdir(src_dicom_path):
+        if '.DS' not in f:
+            src_dicom_path_plus_one = src_dicom_path + '/' + f
+            break
+
+    for f in os.listdir(src_dicom_path_plus_one):
+        if '.DS' not in f:
+            src_series_path = src_dicom_path_plus_one + '/' + f + '/'
+            dst_series_dir = dst_root_dir + '/' + os.path.basename(os.path.normpath(src_series_path)) + '/'
+            if os.path.exists(dst_series_dir) is False:
+                os.makedirs(dst_series_dir)
+            instances = list()
+            instance_files = [src_series_path + '/' + f for f in os.listdir(src_series_path)
+                              if isfile(join(src_series_path, f)) and '.DS' not in f]
+
+            for instance_file in instance_files:
                 instance = dict()
                 try:
-                    ds_image = pydicom.dcmread(fpath)
+                    ds_image = pydicom.dcmread(instance_file)
                     pixel_array_numpy = ds_image.pixel_array
-                    img_file = os.path.basename(filename) + '.jpg'
-                    dir_path = os.path.dirname(__file__) + '/organized_data/' + str(study_id) + '/'
-                    if os.path.exists(dir_path) is False:
-                        os.mkdir(dir_path)
-                    img_file_path = os.path.join(dir_path, img_file)
+                    img_file_path = dst_series_dir + os.path.basename(os.path.normpath(instance_file)) + '.png'
                     cv2.imwrite(img_file_path, pixel_array_numpy)
+                    shutil.copy(instance_file, dst_series_dir + os.path.basename(os.path.normpath(instance_file)))
                     instance['is_a'] = 'image'
                     instance['image_path'] = img_file_path
                     instance = get_common_data(instance, ds_image)
                 except Exception as e:
                     try:
-                        ds_0 = pydicom.filereader.dcmread(fpath)
+                        ds_0 = pydicom.filereader.dcmread(instance_file)
+                        shutil.copy(instance_file, dst_series_dir + os.path.basename(os.path.normpath(instance_file)))
                         instance['is_a'] = 'annotation'
                         instance = get_common_data(instance, ds_0)
                         texts, graphics = get_annotation_data(ds_0)
                         instance = get_valid_annotation_data(instance, texts, graphics)
+                        if instance is not None:
+                            has_annotation = True
                     except Exception as e:
                         instance['is_a'] = 'unknown'
-                if instance is not None:
+                if has_annotation and instance is not None:
                     instances.append(instance)
-    study_data['instances'] = instances
-    return study_data
+            preprocessed_pixels = get_3d_preprocessed_data(instance_files)
+    if len(instances) > 0:
+        study_data['instances'] = instances
+        print('Total Number of Studies      : ' + str(len(instances)))
+        return study_data
+    else:
+        return None

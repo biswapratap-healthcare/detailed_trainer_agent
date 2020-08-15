@@ -104,51 +104,45 @@ class DataConnector:
 
     def get_data(self, from_date, to_date):
         self.__login()
-        db_handle = MongoDB()
         patients = self.__get_dicom_instances_ids_by_date(from_date, to_date)
         for p in patients:
+            patient_db_payload = dict()
+
+            if len(p['dicomFileDetails']) > 1:
+                print("[Error] !!!!! Found more than one study !!!!! Aborting ...")
+                break
+            study = p['dicomFileDetails'][0]
+
             try:
-                patient_db_payload = dict()
-                name = str(p['patientName'])
-                sex = str(p['sex'])
-                age = str(p['age'])
-                dr_review = DataConnector.remove_html_tags(str(p['drReview']))
-                typ = str(p['type'])
-                reason_type = str(p['reasonType'])
-                studies = p['dicomFileDetails']
+                patient_db_payload['patient_name'] = patient_name = str(p['patientName'])
+                patient_db_payload['sex'] = str(p['sex'])
+                patient_db_payload['age'] = str(p['age'])
+            except Exception as err:
+                print("[Warning] Patient Name, Age, Sex and studies are mandatory, not found!! Skipping record.")
+                continue
 
-                patient_db_payload['patient_name'] = name
-                patient_db_payload['sex'] = sex
-                patient_db_payload['age'] = age
-                patient_db_payload['doctor_review'] = dr_review
-                patient_db_payload['type'] = typ
-                patient_db_payload['reason_type'] = reason_type
+            try:
+                patient_db_payload['doctor_review'] = DataConnector.remove_html_tags(str(p['drReview']))
+                patient_db_payload['type'] = str(p['type'])
+                patient_db_payload['reason_type'] = str(p['reasonType'])
+            except Exception as err:
+                pass
 
-                #print('*********** Per Patient Data ***********')
-                #print('Patient Name           : ' + name)
-                #print('Number of Studies      : ' + str(len(studies)))
-                #print('Sex                    : ' + sex)
-                #print('Age                    : ' + age)
-                #print('Dr Review              : ' + dr_review)
-                #print('Type                   : ' + typ)
-                #print('Reason Type            : ' + reason_type)
-                #print("*****************************************")
+            print()
+            print('Patient Name : ' + patient_name)
 
-                all_studies = list()
-                for s in studies:
-                    path = self.__get_study_instance(s['studyInstanceUID'])
-                    if path == '':
-                        continue
-                    study_data = get_instance_data(path)
-                    all_studies.append(study_data)
+            path = self.__get_study_instance(study['studyInstanceUID'])
+            if path == '':
+                print('[Warning] No data found for studyInstanceUID')
+                continue
+            study_data = get_instance_data(patient_name, path)
 
-                patient_db_payload['studies'] = all_studies
-                print()
-                #try:
-                #    db_handle.to_db(payload=patient_db_payload, db=MONGO_HOPS_DB, collection=MONGO_XRAY_COLLECTION)
-                #    patient_db_payload.clear()
-                #    db_handle.close()
-                #except Exception as e:
-                #    print("Ignoring Exception [1]: " + str(e))
-            except Exception as e:
-                print("Ignoring Exception [2]: " + str(e))
+            patient_db_payload['study'] = study_data
+            json_val = json.dumps(patient_db_payload)
+            print('d')
+            #try:
+            #    db_handle.to_db(payload=patient_db_payload, db=MONGO_HOPS_DB, collection=MONGO_XRAY_COLLECTION)
+            #    patient_db_payload.clear()
+            #    db_handle.close()
+            #except Exception as e:
+            #    print("Ignoring Exception [DB]: " + str(e))

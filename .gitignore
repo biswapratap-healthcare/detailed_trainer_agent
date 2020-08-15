@@ -9,4 +9,5 @@ data
 build
 dist
 *.spec
+dicom_files
 
